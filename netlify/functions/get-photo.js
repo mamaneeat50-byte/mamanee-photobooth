@@ -7,7 +7,12 @@ exports.handler = async (event) => {
   }
 
   try {
-    const store = getStore({ name: 'photos', consistency: 'strong' });
+    const store = getStore({
+      name: 'photos',
+      consistency: 'strong',
+      siteID: process.env.BLOBS_SITE_ID,
+      token: process.env.BLOBS_TOKEN
+    });
     const result = await store.getWithMetadata(key, { type: 'arrayBuffer' });
 
     if (!result) {
