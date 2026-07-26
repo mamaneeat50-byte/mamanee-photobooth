@@ -480,7 +480,11 @@ async function uploadStripAndShowQR() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ dataURL: stripDataURL })
     });
-    if (!res.ok) throw new Error('upload failed');
+    if (!res.ok) {
+  let details = '';
+  try { const errJson = await res.json(); details = errJson.message || errJson.error || JSON.stringify(errJson); } catch(e) { details = await res.text().catch(()=> ''); }
+  throw new Error(`upload failed (${res.status}): ${details}`);
+}
     const { key } = await res.json();
 
     const photoUrl = `${location.origin}/.netlify/functions/get-photo?key=${encodeURIComponent(key)}`;
@@ -490,7 +494,7 @@ async function uploadStripAndShowQR() {
     wrapEl.appendChild(canvas);
     await QRCode.toCanvas(canvas, photoUrl, { width: 132, margin: 1, color: { dark: '#800c43', light: '#ffffff' } });
   } catch (err) {
-    console.error('QR upload error', err);
+    alert('DEBUG - upload error: ' + err.message);
     wrapEl.innerHTML = '<span class="qr-status">Couldn\'t upload — use the Google Photos album below, or ask staff to download a copy.</span>';
   }
 }
