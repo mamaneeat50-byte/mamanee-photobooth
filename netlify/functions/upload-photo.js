@@ -20,7 +20,12 @@ exports.handler = async (event) => {
 
     const key = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
 
-    const store = getStore({ name: 'photos', consistency: 'strong' });
+    const store = getStore({
+      name: 'photos',
+      consistency: 'strong',
+      siteID: process.env.BLOBS_SITE_ID,
+      token: process.env.BLOBS_TOKEN
+    });
     await store.set(key, buffer, { metadata: { contentType } });
 
     return {
