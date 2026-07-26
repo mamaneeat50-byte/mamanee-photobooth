@@ -18,7 +18,6 @@ exports.handler = async (event) => {
     const [, contentType, base64] = match;
     const buffer = Buffer.from(base64, 'base64');
 
-    // Unique key for this photo strip
     const key = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
 
     const store = getStore({ name: 'photos', consistency: 'strong' });
@@ -34,7 +33,7 @@ exports.handler = async (event) => {
     return {
       statusCode: 500,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Upload failed' })
+      body: JSON.stringify({ error: 'Upload failed', message: err.message, stack: err.stack })
     };
   }
 };
