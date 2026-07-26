@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Mamanee's Photo Booth</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Updock&family=DM+Sans:wght@300;400;500;700&display=swap');
+
+  
+  :root { 
+    --bg: #ffeef4;
+    --surface: #ffffff;
+    --card: #fff0f6;
+    --accent: #ff2e93;
+    --accent2: #ff7ebb;
+    --text: #800c43;
+    --muted: #df80a9;
+    --border: #ffaecf; 
+  }
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow: hidden; }
+  
+  .screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; padding: 24px; position: relative; }
+  .screen.active { display: flex; }
+  
+  /* WELCOME SCREEN */
+  #welcome { background: radial-gradient(circle at 50% 30%, #fff7fa 0%, #ffeef4 80%); gap: 10px; overflow: hidden; }
+  
+  /* Royal Barbie Glitter Typography */
+  .welcome-title {
+    font-family: 'Updock', cursive;
+    font-size: clamp(64px, 15vw, 120px);
+    font-weight: 700;
+    line-height: 0.9;
+    text-align: center;
+    padding: 0 10px;
+    background: linear-gradient(to right, #ff1493, #ff69b4, #ff1493, #ff69b4);
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: glitterFlow 4s linear infinite;
+    filter: drop-shadow(0 2px 10px rgba(255, 20, 147, 0.3)) drop-shadow(0px 0px 1px rgba(255,255,255,0.8));
+    margin-bottom: 5px;
+    position: relative;
+  }
+  
+  @keyframes glitterFlow {
+    0% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+    100% { background-position: 0% center; }
+  }
+
+  .welcome-sub { font-size: clamp(13px, 2.5vw, 18px); font-weight: 500; color: var(--muted); letter-spacing: 5px; text-transform: uppercase; text-align: center; margin-bottom: 48px; }
+  
+  /* PREMIUM BUTTONS */
+  .btn-primary { background: linear-gradient(135deg, #ff1493, #ff69b4); color: #fff; border: none; border-radius: 100px; padding: 20px 64px; font-family: 'DM Sans', sans-serif; font-size: 19px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; letter-spacing: .5px; box-shadow: 0 8px 24px rgba(255, 20, 147, 0.25); }
+  .btn-primary:hover { box-shadow: 0 12px 32px rgba(255, 20, 147, 0.4); transform: translateY(-2px); }
+  .btn-primary:active { transform: translateY(1px); box-shadow: 0 4px 12px rgba(255, 20, 147, 0.2); }
+  
+  .btn-ghost { background: rgba(255, 255, 255, 0.6); color: var(--text); border: 1.5px solid var(--border); border-radius: 100px; padding: 14px 36px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; margin-top: 20px; backdrop-filter: blur(5px); }
+  .btn-ghost:hover { background: #fff; border-color: var(--accent); color: var(--accent); }
+
+  /* SETTINGS */
+  #settings { background: var(--bg); justify-content: flex-start; padding-top: 32px; overflow-y: auto; }
+  .settings-header { font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 32px; color: var(--text); margin-bottom: 24px; align-self: flex-start; border-bottom: 3px solid var(--border); padding-bottom: 6px; width: 100%; max-width: 560px;}
+  .tab-nav { display: flex; gap: 6px; background: rgba(255, 255, 255, 0.5); border-radius: 16px; padding: 6px; margin-bottom: 24px; width: 100%; max-width: 560px; border: 1px solid var(--border); }
+  .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--muted); border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+  .tab-btn.active { background: #fff; color: var(--accent); font-weight: 700; box-shadow: 0 4px 12px rgba(255, 20, 147, 0.1); }
+  .tab-pane { display: none; width: 100%; max-width: 560px; flex-direction: column; gap: 20px; }
+  .tab-pane.active { display: flex; }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field label { font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; text-transform: uppercase; }
+  .field input, .field select { background: #fff; border: 1.5px solid var(--border); border-radius: 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 16px; padding: 14px 18px; outline: none; width: 100%; transition: border-color .2s; }
+  .field input:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.1); }
+  
+  .color-row { display: flex; gap: 12px; }
+  .color-swatch { width: 44px; height: 44px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+  .color-swatch.selected { border-color: var(--accent); transform: scale(1.15); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+  
+  .template-card { background: #fff; border: 1.5px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+  .template-card h4 { font-size: 15px; color: var(--accent); margin-bottom: 14px; }
+  .template-sizes { display: flex; flex-direction: column; gap: 10px; }
+  .template-size { display: flex; align-items: center; gap: 12px; }
+  .template-size-badge { background: rgba(255, 20, 147, 0.08); color: var(--accent); border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .template-size-desc { font-size: 13px; color: var(--text); opacity: 0.8; }
+  
+  .frame-upload-area { border: 2px dashed var(--border); border-radius: 20px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; background: rgba(255,255,255,0.4); }
+  .frame-upload-area:hover { border-color: var(--accent); background: #fff; }
+  .frame-upload-area input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .frame-upload-icon { font-size: 40px; margin-bottom: 10px; }
+  
+  .frame-preview-wrap { position: relative; border-radius: 16px; overflow: hidden; background: var(--card); border: 1.5px solid var(--border); }
+  .frame-preview-wrap img { width: 100%; max-height: 200px; object-fit: contain; display: block; }
+  .frame-remove { position: absolute; top: 12px; right: 12px; background: var(--accent); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  
+  .settings-actions { display: flex; gap: 16px; margin-top: 12px; padding-bottom: 40px; width: 100%; max-width: 560px; }
+  .settings-actions .btn-primary { flex: 2; }
+  .settings-actions .btn-ghost { flex: 1; margin-top: 0; }
+
+  /* CAMERA */
+  #camera { background: #0b0105; padding: 0; position: relative; }
+  #video { width: 100%; height: 100%; object-fit: cover; }
+  .camera-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 40px; background: linear-gradient(to top, rgba(11,1,5,0.7) 0%, transparent 40%); }
+  
+  .shot-counter { position: absolute; top: 32px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 100px; backdrop-filter: blur(10px); }
+  .shot-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.4); transition: all 0.3s; }
+  .shot-dot.done { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .shot-dot.active { background: white; transform: scale(1.3); }
+  
+  #countdown-display { font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: clamp(100px, 25vw, 200px); color: #fff; text-shadow: 0 4px 30px rgba(255, 20, 147, 0.8); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); opacity: 0; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; }
+  #countdown-display.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  
+  .shutter-btn { width: 88px; height: 88px; border-radius: 50%; background: white; border: 6px solid rgba(255, 174, 207, 0.5); cursor: pointer; transition: all 0.2s; position: relative; }
+  .shutter-btn:hover { transform: scale(1.05); border-color: rgba(255, 174, 207, 0.8); }
+  .shutter-btn::after { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: linear-gradient(135deg, #ff69b4, #ff1493); }
+  .shutter-btn:active { transform: scale(0.95); }
+  .shutter-btn:disabled { opacity: .3; cursor: not-allowed; }
+  
+  .flip-btn { position: absolute; top: 28px; right: 28px; background: rgba(255, 20, 147, 0.6); border: none; color: white; width: 48px; height: 48px; border-radius: 50%; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); transition: background 0.2s; }
+  .flip-btn:hover { background: rgba(255, 20, 147, 0.8); }
+
+  .back-btn { position: absolute; top: 28px; left: 28px; background: rgba(255, 20, 147, 0.6); border: none; color: white; width: 48px; height: 48px; border-radius: 50%; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); transition: background 0.2s; z-index: 10; }
+  .back-btn:hover { background: rgba(255, 20, 147, 0.8); }
+
+  /* STRIP PREVIEW SCREEN */
+  #strip-screen { background: var(--bg); gap: 16px; padding: 16px; }
+  #strip-canvas { border-radius: 16px; box-shadow: 0 16px 48px rgba(255, 20, 147, 0.15); max-height: 52vh; width: auto; border: 4px solid white; }
+  
+  /* GALLERY BANNER */
+  .gallery-banner { background: rgba(255, 255, 255, 0.85); border: 1.5px solid var(--border); border-radius: 16px; padding: 10px 20px; text-align: center; max-width: 560px; width: 100%; display: flex; flex-direction: column; gap: 6px; backdrop-filter: blur(5px); }
+  .gallery-banner p { font-size: 13px; font-weight: 700; color: var(--text); }
+  .gallery-link-btn { background: linear-gradient(135deg, #ff1493, #ff69b4); color: #fff; text-decoration: none; border-radius: 100px; padding: 8px 18px; font-size: 13px; font-weight: 700; display: inline-block; transition: all 0.2s; box-shadow: 0 4px 12px rgba(255, 20, 147, 0.2); width: fit-content; margin: 0 auto; }
+  .gallery-link-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(255, 20, 147, 0.3); }
+
+  /* QR HANDOFF PANEL — primary way guests get their photo on their own phone */
+  .qr-banner { background: rgba(255, 255, 255, 0.9); border: 1.5px solid var(--border); border-radius: 16px; padding: 14px 20px; text-align: center; max-width: 560px; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; backdrop-filter: blur(5px); }
+  .qr-banner p.qr-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .qr-banner p.qr-sub { font-size: 12px; color: var(--muted); }
+  #qr-canvas-wrap { background: #fff; padding: 8px; border-radius: 12px; box-shadow: 0 4px 14px rgba(255,20,147,0.12); min-height: 132px; min-width: 132px; display: flex; align-items: center; justify-content: center; }
+  #qr-canvas-wrap canvas { display: block; }
+  .qr-status { font-size: 12px; color: var(--muted); }
+
+  .strip-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 600px; }
+  .strip-actions button { padding: 12px 24px; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+  
+  #btn-share { background: linear-gradient(135deg, #ff1493, #ff69b4); color: #fff; box-shadow: 0 4px 14px rgba(255, 20, 147, 0.2); }
+  #btn-download { background: #fff; color: var(--text); border: 1.5px solid var(--border); }
+  #btn-print { background: #fff; color: var(--text); border: 1.5px solid var(--border); }
+  #btn-retake { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+  #btn-new { background: #fff; color: var(--text); border: 1.5px solid var(--border); }
+  .strip-actions button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 20, 147, 0.15); }
+  
+  /* MISC FX */
+  #flash { position: fixed; inset: 0; background: #ffffff; opacity: 0; pointer-events: none; z-index: 200; }
+  #flash.pop { animation: flashCut 0.25s ease-out; }
+  @keyframes flashCut { 0% { opacity: 1; } 100% { opacity: 0; } }
+  #hidden-canvas { display: none; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+<div id="flash"></div>
+
+<!-- WELCOME SCREEN -->
+<div id="welcome" class="screen active">
+  <div class="welcome-title">Mamanee's Photo Booth</div>
+  <div class="welcome-sub">Tap. Smile. Remember.</div>
+  <button class="btn-primary" onclick="enterFullscreenAndStart()">Start Camera</button>
+  <button class="btn-ghost" onclick="showScreen('settings')">⚙ Settings & Frame</button>
+  <button class="btn-ghost" id="fullscreen-toggle" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+</div>
+
+<!-- SETTINGS SCREEN -->
+<div id="settings" class="screen">
+  <div style="max-width:560px;width:100%;display:flex;flex-direction:column;align-items:flex-start">
+    <div class="settings-header">Custom Setup</div>
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab(event,'tab-event')">Event info</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-frame')">Frame Design</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-camera')">Hardware</button>
+    </div>
+    
+    <!-- EVENT TAB -->
+    <div class="tab-pane active" id="tab-event">
+      <div class="field"><label>Branding text (bottom of blank strip)</label><input id="s-name" type="text" placeholder="Mamanee's Booth" maxlength="40"></div>
+      <div class="field"><label>Subtext / Date</label><input id="s-date" type="text" placeholder="June 2026" maxlength="30"></div>
+      <div class="field">
+        <label>Solid Strip Color Accent</label>
+        <div class="color-row" id="color-swatches">
+          <div class="color-swatch selected" data-color="#ff1493" style="background:#ff1493"></div>
+          <div class="color-swatch" data-color="#ff69b4" style="background:#ff69b4"></div>
+          <div class="color-swatch" data-color="#c44ce8" style="background:#c44ce8"></div>
+          <div class="color-swatch" data-color="#e84c4c" style="background:#e84c4c"></div>
+          <div class="color-swatch" data-color="#000000" style="background:#000000"></div>
+          <div class="color-swatch" data-color="#ffffff" style="background:#ffffff;border-color:#ffaecf"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- FRAME TAB -->
+    <div class="tab-pane" id="tab-frame">
+      <div class="template-card">
+        <h4>📐 Match your Canva Design dimensions:</h4>
+        <div class="template-sizes">
+          <div class="template-size"><span class="template-size-badge">400 × 1300 px</span><span class="template-size-desc">3 vertical layout slots</span></div>
+          <div class="template-size"><span class="template-size-badge">400 × 1700 px</span><span class="template-size-desc">4 vertical layout slots</span></div>
+          <div class="template-size"><span class="template-size-badge">860 × 860 px</span><span class="template-size-desc">4 photos in a 2×2 grid square</span></div>
+          <div class="template-size"><span class="template-size-badge">860 × 440 px</span><span class="template-size-desc">2 photos landscape pairing</span></div>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-top:14px;line-height:1.5">Leave picture boxes completely transparent in Canva, download as a transparent PNG, and upload here.</p>
+      </div>
+      <div class="field">
+        <label>Upload Canva Overlay PNG</label>
+        <div id="frame-upload-area" class="frame-upload-area">
+          <input type="file" accept="image/png" onchange="handleFrameUpload(event)">
+          <div class="frame-upload-icon">💖</div>
+          <div class="frame-upload-label">Click to select frame file</div>
+        </div>
+        <div id="frame-preview" style="display:none" class="frame-preview-wrap">
+          <img id="frame-preview-img" src="" alt="Frame preview">
+          <button class="frame-remove" onclick="removeFrame()">✕</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Strip Grid Configuration</label>
+        <select id="s-layout">
+          <option value="vertical3">Vertical — 3 shots (400×1300)</option>
+          <option value="vertical4">Vertical — 4 shots (400×1700)</option>
+          <option value="grid4">2×2 Grid — 4 shots (860×860)</option>
+          <option value="side2">Side by side — 2 shots (860×440)</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- HARDWARE TAB -->
+    <div class="tab-pane" id="tab-camera">
+      <div class="field"><label>Delay timer between photos</label>
+        <select id="s-countdown"><option value="3" selected>3 seconds</option><option value="5">5 seconds</option><option value="10">10 seconds</option></select>
+      </div>
+      <div class="field"><label>Lens Selector</label>
+        <select id="s-facing"><option value="user">Front Display (Selfie Lens)</option><option value="environment">Rear Primary Lens</option></select>
+      </div>
+    </div>
+    
+    <div class="settings-actions">
+      <button class="btn-ghost" onclick="showScreen('welcome')">Back</button>
+      <button class="btn-primary" onclick="saveSettings()">Save Configuration</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE CAMERA INTERFACE -->
+<div id="camera" class="screen">
+  <video id="video" autoplay playsinline muted></video>
+  <div class="camera-overlay">
+    <div class="shot-counter" id="shot-counter"></div>
+    <div id="countdown-display"></div>
+    <button class="shutter-btn" id="shutter-btn" onclick="startSequence()"></button>
+  </div>
+  <button class="back-btn" onclick="backFromCamera()">←</button>
+  <button class="flip-btn" onclick="flipCamera()">🔄</button>
+</div>
+
+<!-- RENDERED STRIP PREVIEW -->
+<div id="strip-screen" class="screen">
+  <canvas id="strip-canvas"></canvas>
+  
+  <!-- QR HANDOFF: primary way for guests to get the photo on their own phone -->
+  <div class="qr-banner">
+    <p class="qr-title">📱 Scan to save this photo to YOUR phone</p>
+    <div id="qr-canvas-wrap"><span class="qr-status" id="qr-status">Uploading…</span></div>
+    <p class="qr-sub">No app needed — just point your camera at the code</p>
+  </div>
+  <a href="https://photos.app.goo.gl/udVibi6akjJ3gZKP8" target="_blank" style="font-size:11px;color:var(--muted);">or find it later in the shared Google Photos album →</a>
+
+  <div class="strip-actions">
+    <button id="btn-print" onclick="printStrip()">🖨 Print Out</button>
+    <button id="btn-retake" onclick="startCamera()">↺ Take Again</button>
+    <button id="btn-new" onclick="showScreen('welcome')">✓ Complete</button>
+  </div>
+  <a href="#" onclick="downloadStrip();return false;" style="font-size:11px;color:var(--muted);text-decoration:underline;margin-top:2px;">save a copy on this tablet (staff)</a>
+</div>
+
+<canvas id="hidden-canvas"></canvas>
+<script>
+let settings={name:"Mamanee's Booth",date:'',color:'#ff1493',layout:'vertical3',countdown:3,facing:'user'};
+let frameImage=null,stream=null,capturedImages=[],currentShot=0,sequenceRunning=false,stripDataURL=null;
+let countdownTick=null,cameraCancelled=false;
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playShutterSound() {
+  const bufferSize = audioCtx.sampleRate * 0.12; 
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'highpass';
+  filter.frequency.value = 1200;
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.connect(audioCtx.destination);
+  noise.start();
+}
+
+function speakCountdown(text) {
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.volume = 1.0;
+    utterance.rate = 1.2;
+    utterance.pitch = 1.1;
+    window.speechSynthesis.speak(utterance);
+  }
+}
+
+const LAYOUTS={
+  vertical3:{shots:3,W:400,H:1300,slots:[{x:20,y:20,w:360,h:380},{x:20,y:420,w:360,h:380},{x:20,y:820,w:360,h:380}]},
+  vertical4:{shots:4,W:400,H:1700,slots:[{x:20,y:20,w:360,h:380},{x:20,y:420,w:360,h:380},{x:20,y:820,w:360,h:380},{x:20,y:1220,w:360,h:380}]},
+  grid4:{shots:4,W:860,H:860,slots:[{x:20,y:20,w:400,h:400},{x:440,y:20,w:400,h:400},{x:20,y:440,w:400,h:400},{x:440,y:440,w:400,h:400}]},
+  side2:{shots:2,W:860,H:440,slots:[{x:20,y:20,w:400,h:400},{x:440,y:20,w:400,h:400}]}
+};
+
+function switchTab(e,id){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  e.target.classList.add('active');
+}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function handleFrameUpload(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{const img=new Image();img.onload=()=>{frameImage=img;document.getElementById('frame-preview-img').src=ev.target.result;document.getElementById('frame-preview').style.display='block';document.getElementById('frame-upload-area').style.display='none';};img.src=ev.target.result;};
+  reader.readAsDataURL(file);
+}
+function removeFrame(){frameImage=null;document.getElementById('frame-preview').style.display='none';document.getElementById('frame-upload-area').style.display='block';document.getElementById('frame-preview-img').src='';}
+
+document.querySelectorAll('.color-swatch').forEach(sw=>{sw.addEventListener('click',()=>{document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));sw.classList.add('selected');});});
+
+function saveSettings(){
+  settings.name=document.getElementById('s-name').value.trim()||"Mamanee's Booth";
+  settings.date=document.getElementById('s-date').value.trim();
+  settings.layout=document.getElementById('s-layout').value;
+  settings.countdown=parseInt(document.getElementById('s-countdown').value);
+  settings.facing=document.getElementById('s-facing').value;
+  const sel=document.querySelector('.color-swatch.selected');
+  settings.color=sel?sel.dataset.color:'#ff1493';
+  showScreen('welcome');
+}
+
+async function startCamera(){
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  const layout=LAYOUTS[settings.layout];
+  capturedImages=[];currentShot=0;sequenceRunning=false;cameraCancelled=false;
+  document.getElementById('shutter-btn').disabled=false;
+  buildShotDots(layout.shots);
+  showScreen('camera');
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:settings.facing,width:{ideal:1280},height:{ideal:960}},audio:false});document.getElementById('video').srcObject=stream;}
+  catch(e){alert('Camera connection unvailable. Make sure permissions are enabled.');}
+}
+function flipCamera(){settings.facing=settings.facing==='user'?'environment':'user';startCamera();}
+
+function buildShotDots(n){const c=document.getElementById('shot-counter');c.innerHTML='';for(let i=0;i<n;i++){const d=document.createElement('div');d.className='shot-dot'+(i===0?' active':'');d.id=`dot-${i}`;c.appendChild(d);}}
+function updateDots(n){for(let i=0;i<n;i++){const d=document.getElementById(`dot-${i}`);if(!d)continue;d.className='shot-dot'+(i<currentShot?' done':i===currentShot?' active':'');}}
+
+async function startSequence(){
+  if(sequenceRunning)return;sequenceRunning=true;cameraCancelled=false;document.getElementById('shutter-btn').disabled=true;
+  const layout=LAYOUTS[settings.layout];
+  for(let i=0;i<layout.shots;i++){
+    if(cameraCancelled)return;
+    currentShot=i;updateDots(layout.shots);await runCountdown();
+    if(cameraCancelled)return;
+    captureFrame();await sleep(800);
+  }
+  if(cameraCancelled)return;
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  await buildStrip();showScreen('strip-screen');uploadStripAndShowQR();
+}
+
+function backFromCamera(){
+  cameraCancelled=true;sequenceRunning=false;
+  if(countdownTick)clearInterval(countdownTick);
+  if('speechSynthesis' in window)window.speechSynthesis.cancel();
+  document.getElementById('countdown-display').classList.remove('visible');
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  showScreen('welcome');
+}
+
+function runCountdown(){
+  return new Promise(resolve=>{
+    let n=settings.countdown;
+    const el=document.getElementById('countdown-display');
+    el.textContent=n;
+    el.classList.add('visible');
+    speakCountdown(n);
+    
+    countdownTick=setInterval(()=>{
+      n--;
+      if(n<=0){
+        clearInterval(countdownTick);
+        el.classList.remove('visible');
+        resolve();
+      }else{
+        el.textContent=n;
+        speakCountdown(n);
+      }
+    },1000);
+  });
+}
+
+function captureFrame(){
+  playShutterSound();
+  const flash=document.getElementById('flash');flash.classList.add('pop');setTimeout(()=>flash.classList.remove('pop'),250);
+  const video=document.getElementById('video');const canvas=document.getElementById('hidden-canvas');
+  canvas.width=video.videoWidth||1280;canvas.height=video.videoHeight||960;
+  const ctx=canvas.getContext('2d');
+  if(settings.facing==='user'){ctx.translate(canvas.width,0);ctx.scale(-1,1);}
+  ctx.drawImage(video,0,0);capturedImages.push(canvas.toDataURL('image/jpeg',0.92));
+}
+
+async function buildStrip(){
+  const layout=LAYOUTS[settings.layout];
+  const canvas=document.getElementById('strip-canvas');const ctx=canvas.getContext('2d');
+  canvas.width=layout.W;canvas.height=layout.H;
+  const imgs=await Promise.all(capturedImages.map(loadImg));
+  if(frameImage){
+    ctx.fillStyle='#111';ctx.fillRect(0,0,layout.W,layout.H);
+    imgs.forEach((img,i)=>{const slot=layout.slots[i];if(!slot)return;ctx.save();roundRect(ctx,slot.x,slot.y,slot.w,slot.h,6);ctx.clip();drawCover(ctx,img,slot.x,slot.y,slot.w,slot.h);ctx.restore();});
+    ctx.drawImage(frameImage,0,0,layout.W,layout.H);
+  }else{
+    const accent=settings.color;const label=settings.date?`${settings.name}  •  ${settings.date}`:settings.name;const LABEL_H=70;const BORDER=6;
+    ctx.fillStyle='#111';ctx.fillRect(0,0,layout.W,layout.H);
+    ctx.fillStyle=accent;ctx.fillRect(0,0,BORDER,layout.H);ctx.fillRect(layout.W-BORDER,0,BORDER,layout.H);
+    imgs.forEach((img,i)=>{const slot=layout.slots[i];if(!slot)return;ctx.save();roundRect(ctx,slot.x,slot.y,slot.w,slot.h,8);ctx.clip();drawCover(ctx,img,slot.x,slot.y,slot.w,slot.h);ctx.restore();});
+    const labelY=layout.H-LABEL_H;ctx.fillStyle=accent;ctx.fillRect(BORDER,labelY,layout.W-BORDER*2,LABEL_H);
+    ctx.fillStyle=accent==='#ffffff'?'#ff1493':'#ffffff';ctx.font="bold 20px 'DM Sans',sans-serif";ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,layout.W/2,labelY+LABEL_H/2);
+  }
+  stripDataURL=canvas.toDataURL('image/jpeg',0.95);
+}
+
+function drawCover(ctx,img,x,y,w,h){const ir=img.width/img.height,cr=w/h;let sw,sh,sx,sy;if(ir>cr){sh=img.height;sw=sh*cr;sx=(img.width-sw)/2;sy=0;}else{sw=img.width;sh=sw/cr;sx=0;sy=(img.height-sh)/2;}ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+function loadImg(src){return new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.src=src;});}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function dataURLToBlob(dataUrl) {
+  const parts = dataUrl.split(',');
+  const mime = parts[0].match(/:(.*?);/)[1];
+  const binary = atob(parts[1]);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
+}
+
+function getPhotoFile() {
+  return new File([dataURLToBlob(stripDataURL)], `mamanee-photo-booth-${Date.now()}.jpg`, { type: 'image/jpeg' });
+}
+
+async function uploadStripAndShowQR() {
+  const statusEl = document.getElementById('qr-status');
+  const wrapEl = document.getElementById('qr-canvas-wrap');
+  if (!stripDataURL) return;
+  wrapEl.innerHTML = '<span class="qr-status" id="qr-status">Uploading…</span>';
+
+  try {
+    const res = await fetch('/.netlify/functions/upload-photo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dataURL: stripDataURL })
+    });
+    if (!res.ok) throw new Error('upload failed');
+    const { key } = await res.json();
+
+    const photoUrl = `${location.origin}/.netlify/functions/get-photo?key=${encodeURIComponent(key)}`;
+
+    wrapEl.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    wrapEl.appendChild(canvas);
+    await QRCode.toCanvas(canvas, photoUrl, { width: 132, margin: 1, color: { dark: '#800c43', light: '#ffffff' } });
+  } catch (err) {
+    console.error('QR upload error', err);
+    wrapEl.innerHTML = '<span class="qr-status">Couldn\'t upload — use the Google Photos album below, or ask staff to download a copy.</span>';
+  }
+}
+
+function downloadStrip() {
+  if(!stripDataURL) return;
+  const a = document.createElement('a');
+  a.href = stripDataURL;
+  a.download = `mamanee-photo-booth-${Date.now()}.jpg`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+async function shareStrip() {
+  if(!stripDataURL) return;
+  const file = getPhotoFile();
+
+  if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+    try {
+      await navigator.share({
+        title: "Mamanee's Photo Booth",
+        text: "Here is your photo booth strip!",
+        files: [file]
+      });
+      return;
+    } catch (err) {
+      if(err.name === 'AbortError') return;
+    }
+  }
+
+  downloadStrip();
+}
+
+function printStrip(){
+  if(!stripDataURL)return;
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:white}img{max-width:100%;max-height:100vh;object-fit:contain}@media print{body{margin:0}img{width:auto;height:100vh}}</style></head><body><img src="${stripDataURL}" onload="window.print()"></body></html>`);
+  win.document.close();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('s-name').value=settings.name;
+  updateFullscreenButton();
+});
+
+// ── FULLSCREEN ──
+function requestFS(){
+  const el=document.documentElement;
+  if(el.requestFullscreen)return el.requestFullscreen();
+  if(el.webkitRequestFullscreen)return el.webkitRequestFullscreen();
+  if(el.msRequestFullscreen)return el.msRequestFullscreen();
+}
+function exitFS(){
+  if(document.exitFullscreen)return document.exitFullscreen();
+  if(document.webkitExitFullscreen)return document.webkitExitFullscreen();
+  if(document.msExitFullscreen)return document.msExitFullscreen();
+}
+function isFS(){
+  return !!(document.fullscreenElement||document.webkitFullscreenElement||document.msFullscreenElement);
+}
+function toggleFullscreen(){
+  if(isFS())exitFS();else requestFS();
+}
+function enterFullscreenAndStart(){
+  try{ if(!isFS()) requestFS(); }catch(e){}
+  startCamera();
+}
+function updateFullscreenButton(){
+  const btn=document.getElementById('fullscreen-toggle');
+  if(!btn)return;
+  btn.textContent=isFS()?'⛶ Exit Fullscreen':'⛶ Fullscreen';
+}
+['fullscreenchange','webkitfullscreenchange','msfullscreenchange'].forEach(ev=>{
+  document.addEventListener(ev,updateFullscreenButton);
+});
+
+</script>
+</body>
+</html>
