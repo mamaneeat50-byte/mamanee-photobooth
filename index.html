@@ -499,7 +499,7 @@ async function uploadStripAndShowQR() {
   wrapEl.innerHTML = '<span class="qr-status" id="qr-status">Uploading…</span>';
 
   try {
-    const res = await fetch('/.netlify/functions/upload-photo', {
+    const res = await fetch('/upload-photo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ dataURL: stripDataURL })
