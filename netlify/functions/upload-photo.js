@@ -1,5 +1,3 @@
-const crypto = require('crypto');
-
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
@@ -12,25 +10,16 @@ exports.handler = async (event) => {
     }
 
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-    const apiKey = process.env.CLOUDINARY_API_KEY;
-    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
 
-    if (!cloudName || !apiKey || !apiSecret) {
+    if (!cloudName || !uploadPreset) {
       return { statusCode: 500, body: JSON.stringify({ error: 'Cloudinary env vars missing' }) };
     }
 
-    const timestamp = Math.floor(Date.now() / 1000);
-    const folder = 'mamanee-photobooth';
-
-    const paramsToSign = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
-    const signature = crypto.createHash('sha1').update(paramsToSign).digest('hex');
-
     const form = new URLSearchParams();
     form.append('file', dataURL);
-    form.append('api_key', apiKey);
-    form.append('timestamp', timestamp);
-    form.append('folder', folder);
-    form.append('signature', signature);
+    form.append('upload_preset', uploadPreset);
+    form.append('folder', 'mamanee-photobooth');
 
     const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
       method: 'POST',
