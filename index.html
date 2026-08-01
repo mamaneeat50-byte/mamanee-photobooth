@@ -484,9 +484,8 @@ async function uploadStripAndShowQR() {
   try { const errJson = await res.json(); details = errJson.message || errJson.error || JSON.stringify(errJson); } catch(e) { details = await res.text().catch(()=> ''); }
   throw new Error(`upload failed (${res.status}): ${details}`);
 }
-    const { key } = await res.json();
-
-    const photoUrl = `${location.origin}/.netlify/functions/get-photo?key=${encodeURIComponent(key)}`;
+    const { url } = await res.json();
+const photoUrl = url;
 
     wrapEl.innerHTML = '';
     const canvas = document.createElement('canvas');
