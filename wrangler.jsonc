@@ -2,8 +2,10 @@
   "name": "mamanee-photobooth",
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat"],
+  "main": "src/index.js",
   "assets": {
-    "directory": "."
+    "directory": "./public",
+    "binding": "ASSETS"
   },
   "vars": {
     "CLOUDINARY_CLOUD_NAME": "ef7bmygx",
