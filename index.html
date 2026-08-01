@@ -137,11 +137,15 @@
 
   /* QR HANDOFF PANEL — primary way guests get their photo on their own phone */
   .qr-banner { background: rgba(255, 255, 255, 0.9); border: 1.5px solid var(--border); border-radius: 16px; padding: 14px 20px; text-align: center; max-width: 560px; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; backdrop-filter: blur(5px); }
+  .qr-thankyou { font-size: 16px; font-weight: 700; color: var(--text); }
+  .qr-thankyou-sub { font-size: 13px; color: var(--muted); margin-top: -4px; }
   .qr-banner p.qr-title { font-size: 14px; font-weight: 700; color: var(--text); }
   .qr-banner p.qr-sub { font-size: 12px; color: var(--muted); }
   #qr-canvas-wrap { background: #fff; padding: 8px; border-radius: 12px; box-shadow: 0 4px 14px rgba(255,20,147,0.12); min-height: 132px; min-width: 132px; display: flex; align-items: center; justify-content: center; }
   #qr-canvas-wrap canvas { display: block; }
   .qr-status { font-size: 12px; color: var(--muted); }
+  #auto-reset { font-size: 11px; color: var(--muted); opacity: 0.8; margin-top: 2px; }
+  #auto-reset span { font-weight: 700; color: var(--accent); }
 
   .strip-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 600px; }
   .strip-actions button { padding: 12px 24px; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
@@ -266,21 +270,21 @@
 <!-- RENDERED STRIP PREVIEW -->
 <div id="strip-screen" class="screen">
   <canvas id="strip-canvas"></canvas>
-  
+
   <!-- QR HANDOFF: primary way for guests to get the photo on their own phone -->
   <div class="qr-banner">
-    <p class="qr-title">📱 Scan to save this photo to YOUR phone</p>
+    <p class="qr-thankyou">💖 Thank you for celebrating with Mamanee!</p>
+    <p class="qr-thankyou-sub">Your presence made this day even more special.</p>
     <div id="qr-canvas-wrap"><span class="qr-status" id="qr-status">Uploading…</span></div>
-    <p class="qr-sub">No app needed — just point your camera at the code</p>
+    <p class="qr-sub">Scan the QR code to save your keepsake photo — no app needed</p>
+    <p id="auto-reset">Returning to welcome screen in <span id="reset-counter">30</span>s</p>
   </div>
-  <a href="https://photos.app.goo.gl/udVibi6akjJ3gZKP8" target="_blank" style="font-size:11px;color:var(--muted);">or find it later in the shared Google Photos album →</a>
 
   <div class="strip-actions">
     <button id="btn-print" onclick="printStrip()">🖨 Print Out</button>
     <button id="btn-retake" onclick="startCamera()">↺ Take Again</button>
-    <button id="btn-new" onclick="showScreen('welcome')">✓ Complete</button>
+    <button id="btn-new" onclick="clearAutoReset();showScreen('welcome')">✓ Complete</button>
   </div>
-  <a href="#" onclick="downloadStrip();return false;" style="font-size:11px;color:var(--muted);text-decoration:underline;margin-top:2px;">save a copy on this tablet (staff)</a>
 </div>
 
 <canvas id="hidden-canvas"></canvas>
@@ -288,6 +292,7 @@
 let settings={name:"Mamanee's Booth",date:'',color:'#ff1493',layout:'vertical3',countdown:3,facing:'user'};
 let frameImage=null,stream=null,capturedImages=[],currentShot=0,sequenceRunning=false,stripDataURL=null;
 let countdownTick=null,cameraCancelled=false;
+let autoResetInterval=null;
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -359,6 +364,7 @@ function saveSettings(){
 }
 
 async function startCamera(){
+  clearAutoReset();
   if (audioCtx.state === 'suspended') audioCtx.resume();
   const layout=LAYOUTS[settings.layout];
   capturedImages=[];currentShot=0;sequenceRunning=false;cameraCancelled=false;
@@ -385,7 +391,7 @@ async function startSequence(){
   }
   if(cameraCancelled)return;
   if(stream)stream.getTracks().forEach(t=>t.stop());
-  await buildStrip();showScreen('strip-screen');uploadStripAndShowQR();
+  await buildStrip();showScreen('strip-screen');uploadStripAndShowQR();startAutoReset();
 }
 
 function backFromCamera(){
@@ -395,6 +401,25 @@ function backFromCamera(){
   document.getElementById('countdown-display').classList.remove('visible');
   if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
   showScreen('welcome');
+}
+
+// ── AUTO-RESET: returns to welcome screen automatically so the booth keeps flowing ──
+function startAutoReset(){
+  clearAutoReset();
+  let seconds=60;
+  const counterEl=document.getElementById('reset-counter');
+  if(counterEl)counterEl.textContent=seconds;
+  autoResetInterval=setInterval(()=>{
+    seconds--;
+    if(counterEl)counterEl.textContent=seconds;
+    if(seconds<=0){
+      clearAutoReset();
+      showScreen('welcome');
+    }
+  },1000);
+}
+function clearAutoReset(){
+  if(autoResetInterval){clearInterval(autoResetInterval);autoResetInterval=null;}
 }
 
 function runCountdown(){
